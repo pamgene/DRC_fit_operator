@@ -1,15 +1,75 @@
 library(tercen)
 library(dplyr)
+library(ggplot2)
+library(drc)
 
-options("tercen.workflowId" = "wwww")
-options("tercen.stepId"     = "dddd")
+# Set appropriate options
+#options("tercen.serviceUri"="http://tercen:5400/api/v1/")
+#options("tercen.workflowId"= "050e773677ecc404aa5d5a7580016b7d")
+#options("tercen.stepId"= "6a509b68-33a3-4397-9b9c-12696ce2ffac")
+#options("tercen.username"= "admin")
+#options("tercen.password"= "admin")
 
-getOption("tercen.workflowId")
-getOption("tercen.stepId")
+drcFit <- function(df, x_multiplier = 1) {
+  dataY     <- df$.y
+  drc_fit   <- try(drm(.y ~ .x, data = df, fct = LL.4(), logDose = 10, na.action=na.omit), silent=TRUE)
+  fit_error <- FALSE
+  if(class(drc_fit)[1] == 'try-error') {
+    fit_error <- TRUE
+  } else {
+    cfs         <- as.vector(coef(drc_fit))
+    hillslope   <- cfs[1]
+    Ymin        <- cfs[2]
+    Ymax        <- cfs[3]
+    MI          <- log10((Ymin/Ymax)^(sign(hillslope))) 
+    EC50        <- cfs[4]
+    logEC50     <- log10(EC50)
+    Rsq         <- 1-(sum(residuals(drc_fit)^2)/sum((dataY-mean(dataY))^2))
+    lpRes       <- -log10(var.test(residuals(drc_fit), dataY - mean(dataY) )$p.value)
+    
+    err.95  <- try(as.vector((coef(drc_fit) - confint(drc_fit)) [,1]), silent = TRUE)
+    if (class(err.95)[1] == 'try-error') {
+      fit_error <- TRUE
+    }
+    else{
+      err.95.hillslope = err.95[1]
+      err.95.Ymin      = err.95[2]
+      err_95.Ymax      = err.95[3]
+      err.95.EC50      = err.95[4]
+    }
+  }
+  if (fit_error) {
+    hillslope <- Ymin <- Ymax <- EC50 <- logEC50 <- NaN
+    MI        <- Rsq  <- lpRes <- 0
+    err.95.hillslope <- err.95.Ymin <- err_95.Ymax <- err.95.EC50 <- NaN
+  }
+  
+  data.frame(.ri              = df$.ri[1], 
+             .ci              = df$.ci[1], 
+             Ymax             = Ymax, 
+             err_95.Ymax      = err_95.Ymax,
+             Ymin             = Ymin, 
+             err.95.Ymin      = err.95.Ymin,           
+             EC50             = x_multiplier * EC50, 
+             err.95.EC50      = x_multiplier * err.95.EC50,
+             logEC50          = logEC50, 
+             hillslope        = hillslope, 
+             err.95.hillslope = err.95.hillslope,
+             R2               = Rsq,
+             lpRes            = lpRes,
+             MI               = MI
+  )
+}
 
-(ctx = tercenCtx())  %>% 
-  select(.y, .ci, .ri) %>% 
-  group_by(.ci, .ri) %>%
-  summarise(median = median(.y)) %>%
+ctx = tercenCtx()
+
+x_axis_multiplier <- ifelse(is.null(ctx$op.value('X-axis multiplier')), 1.0, as.double(ctx$op.value('X-axis multiplier')))
+
+ctx %>% 
+  dplyr::select(.ri, .ci, .y, .x) %>%
+  group_by(.ri, .ci) %>%
+  do(drcFit(., x_axis_multiplier)) %>%
+  ungroup() %>%
+  mutate_at(vars(setdiff(colnames(data), c(".ri", ".ci"))), ~ifelse(!is.nan(.) & abs(.) > 1e30, NaN, .)) %>%
   ctx$addNamespace() %>%
   ctx$save()

@@ -1,50 +1,18 @@
-# Template R operator
-
-The `Template R operator` is a template repository for the creation of R operators in Tercen. An overview of steps for developing an operator are:
-
-1. create a github repo
-2. install tercen_studio
-3. login to tercen_studio
-4. git clone the newly created repo
-5. start developing in R in tercen_studio
-6. add R packages to the repo
-7. push to the github repo
-8. go to tercen and install the operator
-
-More information can be found in [Tercen app builder's guide](https://tercen.github.io/appbuilders-guide/).
-
-Below is the operator README standard structure:
+# DRC_fit_operator
 
 ##### Description
 
-The `Template R operator` is a template repository for the creation of R operators in Tercen.
-
-##### Usage
-
-Input projection|.
----|---
-`x-axis`        | type, description 
-`y-axis`        | type, description 
-`row`           | type, description 
-`column`        | type, description 
-`colors`        | type, description 
-`labels`        | type, description 
-
-Input parameters|.
----|---
-`input_var`        | parameter description
-
-Output relations|.
----|---
-`output_var`        | output relation
-`Operator view`        | view of the Shiny application
+`DRC_fit_operator` is an operator for the analysis of dose response curves using a 4 parameter dose response model. This operator is part of the DRC_app.
 
 ##### Details
 
-Details on the computation.
+* The PamApp should be used with linear Signals (i.e. no log transformation of the signals)
+* The concentration (dose) must be provided in logM (i.e. 1 uM = -6, 10 uM = -5 etc.). Use the Excel sheet below to calculate LogM values for your concentrations (uM to LogM)
+  - [LogM calculations.xlsx](https://tercen.com/pamgene/f/4629c134b09c53160ea461e75f8da7dc)
+* Note that both the fitting procedure and rendering of high res output can take some processing time.
+
+The input data is the [DRC dataset](https://tercen.com/r/4629c134b09c53160ea461e75f7ff2b8)
 
 ##### See Also
 
-[template_shiny_operator](https://github.com/tercen/template_shiny_operator)
-, [template_docker_operator](https://github.com/tercen/template_docker_operator)
-
+[DRC_app](https://github.com/tercen/DRC_app)
