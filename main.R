@@ -60,6 +60,7 @@ x_axis_multiplier <- ifelse(is.null(ctx$op.value('X-axis multiplier')), 1.0, as.
 
 ctx %>% 
   dplyr::select(.ri, .ci, .y, .x) %>%
+  arrange(.ri, .ci, .x) %>%
   group_by(.ri, .ci) %>%
   do(drcFit(., x_axis_multiplier)) %>%
   ungroup() %>%
