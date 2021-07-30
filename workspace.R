@@ -14,7 +14,8 @@ drcFit <- function(df, x_multiplier = 1) {
   dataY     <- df$.y
   drc_fit   <- try(drm(.y ~ .x, data = df, fct = LL.4(), logDose = 10, na.action=na.omit), silent=TRUE)
   fit_error <- FALSE
-  if(class(drc_fit)[1] == 'try-error') {
+  xfit      <- df$.x
+  if (class(drc_fit)[1] == 'try-error') {
     fit_error <- TRUE
   } else {
     cfs         <- as.vector(coef(drc_fit))
@@ -25,13 +26,14 @@ drcFit <- function(df, x_multiplier = 1) {
     EC50        <- cfs[4]
     logEC50     <- log10(EC50)
     Rsq         <- 1-(sum(residuals(drc_fit)^2)/sum((dataY-mean(dataY))^2))
-    lpRes       <- -log10(var.test(residuals(drc_fit), dataY - mean(dataY) )$p.value)
+    lpRes       <- -log10(var.test(residuals(drc_fit), dataY - mean(dataY))$p.value)
+    yfit        <- predict(drc_fit)
     
     err.95  <- try(as.vector((coef(drc_fit) - confint(drc_fit)) [,1]), silent = TRUE)
     if (class(err.95)[1] == 'try-error') {
       fit_error <- TRUE
     }
-    else{
+    else {
       err.95.hillslope = err.95[1]
       err.95.Ymin      = err.95[2]
       err_95.Ymax      = err.95[3]
@@ -42,6 +44,7 @@ drcFit <- function(df, x_multiplier = 1) {
     hillslope <- Ymin <- Ymax <- EC50 <- logEC50 <- NaN
     MI        <- Rsq  <- lpRes <- 0
     err.95.hillslope <- err.95.Ymin <- err_95.Ymax <- err.95.EC50 <- NaN
+    yfit <- df$.y
   }
   
   data.frame(.ri              = df$.ri[1], 
@@ -57,7 +60,9 @@ drcFit <- function(df, x_multiplier = 1) {
              err.95.hillslope = err.95.hillslope,
              R2               = Rsq,
              lpRes            = lpRes,
-             MI               = MI
+             MI               = MI,
+             xfit             = xfit,
+             yfit             = yfit
   )
 }
 
