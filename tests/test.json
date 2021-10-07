@@ -2,7 +2,7 @@
   "kind": "OperatorUnitTest",
   "name": "test",
   "namespace": "ds0",
-  "inputDataUri": "groups_series_measurement2_exp.tsv",
+  "inputDataUri": "groups_series_exp.csv",
   "outputDataUri": ["table1.csv","table2.csv","table3.csv"],
   "columns": ["Group"],
   "rows": ["Variable"],
