@@ -9,5 +9,6 @@
   "colors": [],
   "labels": [],
   "yAxis": "Measurement",
-  "xAxis": "Series"
+  "xAxis": "Series",
+  "absTol": 1e-05
 }
