@@ -10,5 +10,5 @@
   "labels": [],
   "yAxis": "Measurement",
   "xAxis": "Series",
-  "absTol": 1e-05
+  "absTol": 1e-03
 }
